@@ -1,11 +1,11 @@
-#include <gtest/gtest.h>
+#include <climits>
+#include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
-#include <cstdarg>
-#include <climits>
-#include <string>
 #include <fstream>
+#include <gtest/gtest.h>
 #include <sstream>
+#include <string>
 
 extern "C" int ft_printf(const char *format, ...);
 
@@ -23,6 +23,17 @@ TEST(ft_printf_test, percent_c)
     ft_printf("%c", 'A');
     std::string output = testing::internal::GetCapturedStdout();
     EXPECT_EQ(output, "A");
+}
+
+TEST(ft_printf_test, percent_c_1)
+{
+    testing::internal::CaptureStdout();
+    ft_printf("%c", 'A' + 256);
+    std::string ft_output = testing::internal::GetCapturedStdout();
+    testing::internal::CaptureStdout();
+    printf("%c", 'A' + 256);
+    std::string std_output = testing::internal::GetCapturedStdout();
+    EXPECT_EQ(ft_output, std_output);
 }
 
 TEST(ft_printf_test, percent_s)
@@ -57,26 +68,48 @@ TEST(ft_printf_test, percent_d_min)
     EXPECT_EQ(output, "-2147483648");
 }
 
+TEST(ft_printf_test, percent_d_overflow)
+{
+    testing::internal::CaptureStdout();
+    ft_printf("%d", LONG_MAX);
+    std::string ft_output = testing::internal::GetCapturedStdout();
+    testing::internal::CaptureStdout();
+    printf("%d", LONG_MAX);
+    std::string std_output = testing::internal::GetCapturedStdout();
+    EXPECT_EQ(ft_output, std_output);
+}
+
 TEST(ft_printf_test, percent_p)
 {
     testing::internal::CaptureStdout();
     void *ptr = (void *)0x12345678;
     ft_printf("%p", ptr);
     std::string ft_output = testing::internal::GetCapturedStdout();
-
     testing::internal::CaptureStdout();
     printf("%p", ptr);
     std::string std_output = testing::internal::GetCapturedStdout();
     EXPECT_EQ(ft_output, std_output);
 }
 
-TEST(ft_printf_test, percent_p_NULL)
+TEST(ft_printf_test, percent_p_n1)
 {
     testing::internal::CaptureStdout();
-    void *empty_pointer = NULL;
+    ft_printf("%p", -1);
+    std::string ft_output = testing::internal::GetCapturedStdout();
+    testing::internal::CaptureStdout();
+    printf("%p", -1);
+    std::string std_output = testing::internal::GetCapturedStdout();
+    EXPECT_EQ(ft_output, std_output);
+}
+
+TEST(ft_printf_test, percent_p_NULL)
+{
+    void *empty_pointer;
+
+    testing::internal::CaptureStdout();
+    empty_pointer = NULL;
     ft_printf("%p", empty_pointer);
     std::string ft_output = testing::internal::GetCapturedStdout();
-
     testing::internal::CaptureStdout();
     printf("%p", empty_pointer);
     std::string std_output = testing::internal::GetCapturedStdout();
@@ -87,7 +120,6 @@ TEST(ft_printf_test, percent_u)
     testing::internal::CaptureStdout();
     ft_printf("%u", UINT_MAX);
     std::string ft_output = testing::internal::GetCapturedStdout();
-
     testing::internal::CaptureStdout();
     printf("%u", UINT_MAX);
     std::string std_output = testing::internal::GetCapturedStdout();
@@ -99,23 +131,31 @@ TEST(ft_printf_test, percent_x)
     testing::internal::CaptureStdout();
     ft_printf("%x", INT32_MAX);
     std::string ft_output = testing::internal::GetCapturedStdout();
-
     testing::internal::CaptureStdout();
     printf("%x", INT32_MAX);
     std::string std_output = testing::internal::GetCapturedStdout();
-    EXPECT_EQ(ft_output, std_output);   
+    EXPECT_EQ(ft_output, std_output);
 }
 
+TEST(ft_printf_test, percent_x_n1)
+{
+    testing::internal::CaptureStdout();
+    ft_printf("%x", -1);
+    std::string ft_output = testing::internal::GetCapturedStdout();
+    testing::internal::CaptureStdout();
+    printf("%x", -1);
+    std::string std_output = testing::internal::GetCapturedStdout();
+    EXPECT_EQ(ft_output, std_output);
+}
 TEST(ft_printf_test, percent_X)
 {
     testing::internal::CaptureStdout();
     ft_printf("%X", INT32_MAX);
     std::string ft_output = testing::internal::GetCapturedStdout();
-
     testing::internal::CaptureStdout();
     printf("%X", INT32_MAX);
     std::string std_output = testing::internal::GetCapturedStdout();
-    EXPECT_EQ(ft_output, std_output);   
+    EXPECT_EQ(ft_output, std_output);
 }
 
 TEST(ft_printf_test, percent_percent)
@@ -131,11 +171,10 @@ TEST(ft_printf_test_bonus, sharp_percent_x)
     testing::internal::CaptureStdout();
     ft_printf("%#x", INT32_MAX);
     std::string ft_output = testing::internal::GetCapturedStdout();
-
     testing::internal::CaptureStdout();
     printf("%#x", INT32_MAX);
     std::string std_output = testing::internal::GetCapturedStdout();
-    EXPECT_EQ(ft_output, std_output);   
+    EXPECT_EQ(ft_output, std_output);
 }
 
 TEST(ft_printf_test_bonus, plus_percent_d)
@@ -143,7 +182,6 @@ TEST(ft_printf_test_bonus, plus_percent_d)
     testing::internal::CaptureStdout();
     ft_printf("%+d", 42);
     std::string ft_output = testing::internal::GetCapturedStdout();
-
     testing::internal::CaptureStdout();
     printf("%+d", 42);
     std::string std_output = testing::internal::GetCapturedStdout();
@@ -153,11 +191,21 @@ TEST(ft_printf_test_bonus, plus_percent_d)
 TEST(ft_printf_test_bonus, space_percent_d)
 {
     testing::internal::CaptureStdout();
-    ft_printf("% d", 42);
+    ft_printf("% d", -42);
     std::string ft_output = testing::internal::GetCapturedStdout();
-
     testing::internal::CaptureStdout();
-    printf("% d", 42);
+    printf("% d", -42);
+    std::string std_output = testing::internal::GetCapturedStdout();
+    EXPECT_EQ(ft_output, std_output);
+}
+
+TEST(ft_printf_test_bonus, space_percent_d_space)
+{
+    testing::internal::CaptureStdout();
+    ft_printf(" % d ", 42);
+    std::string ft_output = testing::internal::GetCapturedStdout();
+    testing::internal::CaptureStdout();
+    printf(" % d ", 42);
     std::string std_output = testing::internal::GetCapturedStdout();
     EXPECT_EQ(ft_output, std_output);
 }
@@ -165,11 +213,10 @@ TEST(ft_printf_test_bonus, space_percent_d)
 TEST(ft_printf_test_bonus, mix)
 {
     testing::internal::CaptureStdout();
-    ft_printf("%#+d", 255);
+    ft_printf("% #+d ", 255);
     std::string ft_output = testing::internal::GetCapturedStdout();
-
     testing::internal::CaptureStdout();
-    printf("%#+d", 255);
+    printf("% #+d ", 255);
     std::string std_output = testing::internal::GetCapturedStdout();
     EXPECT_EQ(ft_output, std_output);
 }
@@ -177,5 +224,5 @@ TEST(ft_printf_test_bonus, mix)
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+    return (RUN_ALL_TESTS());
 }
