@@ -16,7 +16,7 @@ include_directories(${gtest_SOURCE_DIR}/include)
 
 add_custom_target(
     build_sub_makefile ALL
-    COMMAND ${CMAKE_MAKE_PROGRAM} -C ${CMAKE_CURRENT_SOURCE_DIR}/ft_printf
+    COMMAND ${CMAKE_MAKE_PROGRAM} -C ${CMAKE_CURRENT_SOURCE_DIR}/..
     COMMENT "Building external project using its Makefile"
 )
 
